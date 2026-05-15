@@ -16,7 +16,7 @@ func initalizeServer() {
 	for {
 		conn, err := listen.Accept()
 		if err != nil {
-			log.Println(" [-] Error accepting connection")
+			log.Println("[-] Error accepting connection")
 			continue
 		}
 		go handleImplants(conn)

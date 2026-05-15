@@ -15,7 +15,7 @@ var outputDone = make(chan bool)
 func getUserInput() {
 	input := bufio.NewReader(os.Stdin)
 	for {
-		fmt.Printf("[operator]> ")
+		fmt.Print("[operator]> ")
 		command, err := input.ReadString('\n')
 		if err != nil {
 			log.Println("[-] Error reading input:", err)
@@ -29,7 +29,6 @@ func getUserInput() {
 
 func sendCommands(conn net.Conn) {
 
-	fmt.Println("[*] Sending command:", pendingCommand)
 	_, err := conn.Write([]byte(pendingCommand))
 	if err != nil {
 		log.Println("[-] Error sending command", err)
