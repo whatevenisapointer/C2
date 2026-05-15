@@ -6,6 +6,8 @@
 
 #pragma comment(lib, "ws2_32.lib")
 
+
+
 int main()
 {
     WSADATA wsa;
@@ -28,14 +30,18 @@ int main()
     server.sin_family = AF_INET;
     server.sin_port = htons(4444);
 
-    if(connect(s, (struct sockaddr *)&server, sizeof(server)) < 0)
+    int conn = connect(s, (struct sockaddr *)&server, sizeof(server)); 
+    if(conn != 0)
     {
         printf("[-] Connection error: %d", WSAGetLastError());
         return 1;
     }
 
-    printf("\nConnected to teamserver");
+    printf("Connected to teamserver");
 
+    while(1)
+    {
+    }
 
     return 0;
 }
