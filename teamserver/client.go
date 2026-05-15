@@ -9,18 +9,28 @@ import (
 	"strings"
 )
 
+var pendingCommand string
+var outputDone = make(chan bool)
+
+func getUserInput() {
+	input := bufio.NewReader(os.Stdin)
+	for {
+		fmt.Printf("[operator]> ")
+		command, err := input.ReadString('\n')
+		if err != nil {
+			log.Println("[-] Error reading input:", err)
+			return
+		}
+
+		pendingCommand = strings.TrimSpace(command)
+		<-outputDone
+	}
+}
+
 func sendCommands(conn net.Conn) {
 
-	fmt.Printf("[operator]> ")
-	input := bufio.NewReader(os.Stdin)
-	command, err := input.ReadString('\n')
-	if err != nil {
-		log.Println("[-] Error reading command:", err)
-		return
-	}
-	command = strings.TrimSpace(command)
-	fmt.Println("[*] Sending command:", command)
-	_, err = conn.Write([]byte(command))
+	fmt.Println("[*] Sending command:", pendingCommand)
+	_, err := conn.Write([]byte(pendingCommand))
 	if err != nil {
 		log.Println("[-] Error sending command", err)
 		return
@@ -34,11 +44,11 @@ func receiveOutput(conn net.Conn) {
 	for {
 		output, err := response.ReadString('\n')
 		if err != nil {
-			log.Println("[-] Error receiving command output", err)
 			return
 		}
 
-		if strings.TrimSpace(output) == "END_OF_OUTPUT" {
+		if strings.TrimSpace(output) == "END_OF_OUTPUT" || strings.TrimSpace(output) == "NO_COMMAND" {
+			outputDone <- true
 			return
 		}
 		fmt.Print(output)

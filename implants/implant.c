@@ -72,6 +72,10 @@ int receiveCommands(SOCKET s)
             return 0;
         }
         command[recv_commands] = '\0';
+        if(strcmp(command, "NO_COMMAND") == 0)
+        {
+            return 0;
+        }
         executeCommands(command,s);
 }
 
@@ -87,9 +91,9 @@ int main()
    {
     initializeServer(&s,&server,&wsa);
     receiveCommands(s);
-    Sleep(10000);
     closesocket(s);
     WSACleanup();
+    Sleep(10000);
    }
     return 0;
 }

